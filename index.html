@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GLB Model Viewer</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+    .position-button, .second-position-button, .reset-button {
+      position: fixed;
+      z-index: 1000;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .position-button {
+      bottom: 20px;
+      left: 30%;
+      transform: translateX(-50%);
+    }
+    .second-position-button {
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .reset-button {
+      bottom: 20px;
+      left: 70%;
+      transform: translateX(-50%);
+    }
+    .mobile-message {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      color: white;
+      font-size: 24px;
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .holographic-menu {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 100, 255, 0.2);
+      border: 2px solid #00f;
+      box-shadow: 0 0 20px rgba(0, 100, 255, 0.8), inset 0 0 10px rgba(0, 100, 255, 0.5);
+      padding: 20px;
+      border-radius: 10px;
+      color: #0ff;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      z-index: 1500;
+      backdrop-filter: blur(5px);
+    }
+    .holographic-menu h2 {
+      margin: 0 0 20px;
+      text-shadow: 0 0 10px #0ff;
+    }
+    .holographic-menu button {
+      background: rgba(0, 100, 255, 0.3);
+      border: 1px solid #0ff;
+      color: #0ff;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-shadow: 0 0 5px #0ff;
+      transition: all 0.3s;
+    }
+    .holographic-menu button:hover {
+      background: rgba(0, 100, 255, 0.5);
+      box-shadow: 0 0 10px #0ff;
+    }
+    .holographic-menu input[type="range"] {
+      -webkit-appearance: none;
+      width: 200px;
+      height: 5px;
+      background: rgba(0, 100, 255, 0.3);
+      border-radius: 5px;
+      outline: none;
+      box-shadow: 0 0 10px #0ff;
+    }
+    .holographic-menu input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #0ff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #0ff;
+      cursor: pointer;
+    }
+    .start-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2500;
+    }
+    .start-screen button {
+      padding: 20px 40px;
+      font-size: 24px;
+      background: rgba(0, 100, 255, 0.3);
+      border: 2px solid #0ff;
+      color: #0ff;
+      border-radius: 10px;
+      cursor: pointer;
+      text-shadow: 0 0 10px #0ff;
+      box-shadow: 0 0 20px rgba(0, 100, 255, 0.8);
+      transition: all 0.3s;
+    }
+    .start-screen button:hover {
+      background: rgba(0, 100, 255, 0.5);
+      box-shadow: 0 0 30px rgba(0, 100, 255, 1);
+    }
+    @media (max-width: 768px) and (orientation: portrait) {
+      .mobile-message {
+        display: flex;
+      }
+      canvas, .position-button, .second-position-button, .reset-button, .holographic-menu, .start-screen {
+        display: none;
+      }
+    }
+    @media (max-width: 768px) and (orientation: landscape) {
+      .start-screen {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-message">Lütfen cihazınızı yatay konuma getirin.</div>
+  <div class="start-screen" id="start-screen">
+    <button id="start-button">Başlat</button>
+  </div>
+  <button class="position-button">View 1</button>
+  <button class="second-position-button">View 2</button>
+  <button class="reset-button">Reset View</button>
+  <div class="holographic-menu" id="music-menu">
+    <h2>Müzik Kontrol</h2>
+    <button id="play-pause">Oynat</button>
+    <div>
+      <label for="volume">Ses Seviyesi:</label>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    (function () {
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x000000, 1);
+      document.body.appendChild(renderer.domElement);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+      scene.add(ambientLight);
+
+      const mainLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      mainLight.position.set(5, 10, 5);
+      scene.add(mainLight);
+
+      const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+      fillLight.position.set(-5, 5, 5);
+      scene.add(fillLight);
+
+      const backLight = new THREE.DirectionalLight(0xffffff, 0.2);
+      backLight.position.set(0, 5, -5);
+      scene.add(backLight);
+
+      const loader = new THREE.GLTFLoader();
+      const dracoLoader = new THREE.DRACOLoader();
+      dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/');
+      loader.setDRACOLoader(dracoLoader);
+
+      let loadedModel = null;
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      // Background music setup
+      const audio = new Audio('muzik.mp3');
+      audio.loop = true;
+      audio.volume = 0.5;
+      let isMusicStarted = false;
+
+      const musicMenu = document.getElementById('music-menu');
+      const playPauseButton = document.getElementById('play-pause');
+      const volumeSlider = document.getElementById('volume');
+      const startScreen = document.getElementById('start-screen');
+      const startButton = document.getElementById('start-button');
+
+      startButton.addEventListener('click', () => {
+        audio.play().catch(error => console.error('Müzik oynatma hatası:', error));
+        playPauseButton.textContent = 'Duraklat';
+        isMusicStarted = true;
+        startScreen.style.display = 'none';
+      });
+
+      playPauseButton.addEventListener('click', () => {
+        if (audio.paused) {
+          audio.play().catch(error => console.error('Müzik oynatma hatası:', error));
+          playPauseButton.textContent = 'Duraklat';
+          isMusicStarted = true;
+        } else {
+          audio.pause();
+          playPauseButton.textContent = 'Oynat';
+        }
+      });
+
+      volumeSlider.addEventListener('input', () => {
+        audio.volume = volumeSlider.value;
+      });
+
+      loader.load(
+        'compressed_mun.glb',
+        function (gltf) {
+          try {
+            loadedModel = gltf.scene;
+            loadedModel.traverse((child) => {
+              if (child.isMesh && child.material) {
+                child.material.map = child.material.map || null;
+                child.material.normalMap = child.material.normalMap || null;
+                child.material.metalnessMap = child.material.metalnessMap || null;
+                child.material.roughnessMap = child.material.roughnessMap || null;
+                child.material.needsUpdate = true;
+              }
+            });
+
+            // List all objects in the GLB model
+            console.log('GLB Modelindeki Objeler:');
+            const objectList = [];
+            loadedModel.traverse((object) => {
+              objectList.push({
+                name: object.name || 'İsimsiz',
+                type: object.type,
+                uuid: object.uuid
+              });
+            });
+            console.table(objectList);
+
+            loadedModel.position.set(0, 0, 0);
+            loadedModel.rotation.set(0, Math.PI, 0);
+            scene.add(loadedModel);
+          } catch (error) {
+            console.error('Model işlenirken hata:', error);
+          }
+        },
+        function (xhr) {
+          console.log((xhr.loaded / xhr.total * 100) + '% yüklendi');
+        },
+        function (error) {
+          console.error('GLB modeli yüklenemedi:', error);
+        }
+      );
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.autoRotate = false;
+      controls.rotateSpeed = 0.5;
+      controls.panSpeed = 0.5;
+      controls.zoomSpeed = 0.5;
+
+      camera.position.set(-0.01, 0.97, 0.20);
+      controls.target.set(-0.01, 0.83, -0.27);
+      controls.update();
+
+      // Click event handler for objects
+      function onMouseClick(event) {
+        event.preventDefault();
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(loadedModel ? loadedModel.children : [], true);
+
+        if (intersects.length > 0) {
+          const object = intersects[0].object;
+          console.log('Tıklanan Obje:', {
+            name: object.name || 'İsimsiz',
+            type: object.type,
+            uuid: object.uuid
+          });
+
+          // Check object and its parents for the target name
+          let currentObject = object;
+          while (currentObject) {
+            if (currentObject.name.toLowerCase() === 'victor_victrola_vv120__phonograph_housing') {
+              console.log('Phonograph tespit edildi, menü toggling...');
+              console.log('Mevcut menü display:', musicMenu.style.display);
+              musicMenu.style.display = musicMenu.style.display === 'block' ? 'none' : 'block';
+              console.log('Yeni menü display:', musicMenu.style.display);
+              return;
+            }
+            currentObject = currentObject.parent;
+          }
+          console.log('Phonograph bulunamadı.');
+        }
+      }
+
+      window.addEventListener('click', onMouseClick, false);
+
+      // Mobile orientation handler for full-screen
+      window.addEventListener('orientationchange', () => {
+        if (window.innerWidth < 768 && (window.orientation === 90 || window.orientation === -90)) {
+          if (document.documentElement.requestFullscreen) {
+            renderer.domElement.requestFullscreen().catch(err => console.error('Tam ekran hatası:', err));
+          }
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // First button (View 1)
+      const button = document.querySelector('.position-button');
+      button.addEventListener('click', () => {
+        gsap.to(camera.position, {
+          x: -0.48,
+          y: 0.96,
+          z: -0.23,
+          duration: 1,
+          ease: 'power2.out',
+          onUpdate: () => controls.update()
+        });
+        gsap.to(controls.target, {
+          x: -0.01,
+          y: 0.83,
+          z: -0.27,
+          duration: 1,
+          ease: 'power2.out',
+          onUpdate: () => controls.update()
+        });
+      });
+
+      // Second button (View 2)
+      const secondButton = document.querySelector('.second-position-button');
+      secondButton.addEventListener('click', () => {
+        gsap.to(camera.position, {
+          x: 0.47,
+          y: 0.90,
+          z: -0.27,
+          duration: 1,
+          ease: 'power2.out',
+          onUpdate: () => controls.update()
+        });
+        gsap.to(controls.target, {
+          x: -0.01,
+          y: 0.83,
+          z: -0.27,
+          duration: 1,
+          ease: 'power2.out',
+          onUpdate: () => controls.update()
+        });
+      });
+
+      // Reset button (Initial view)
+      const resetButton = document.querySelector('.reset-button');
+      resetButton.addEventListener('click', () => {
+        gsap.to(camera.position, {
+          x: -0.01,
+          y: 0.97,
+          z: 0.20,
+          duration: 1,
+          ease: 'power2.out',
+          onUpdate: () => controls.update()
+        });
+        gsap.to(controls.target, {
+          x: -0.01,
+          y: 0.83,
+          z: -0.27,
+          duration: 1,
+          ease: 'power2.out',
+          onUpdate: () => controls.update()
+        });
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      setInterval(() => {
+        console.log(
+          `Kamera Pozisyonu: x=${camera.position.x.toFixed(2)}, y=${camera.position.y.toFixed(2)}, z=${camera.position.z.toFixed(2)}`
+        );
+        console.log(
+          `Kontrol Hedefi (controls.target): x=${controls.target.x.toFixed(2)}, y=${controls.target.y.toFixed(2)}, z=${controls.target.z.toFixed(2)}`
+        );
+      }, 2000);
+    })();
+  </script>
+</body>
+</html>
