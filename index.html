@@ -5,48 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GLB Model Viewer</title>
   <style>
-    body { margin: 0; }
+    *{
+      overflow-x: none;
+    }
+    body { margin: 0; background-color: #000000; overflow: hidden; }
     canvas { display: block; }
-    .position-button, .second-position-button, .reset-button {
-      position: fixed;
-      z-index: 1000;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .position-button {
-      bottom: 20px;
-      left: 30%;
-      transform: translateX(-50%);
-    }
-    .second-position-button {
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    .reset-button {
-      bottom: 20px;
-      left: 70%;
-      transform: translateX(-50%);
-    }
-    .mobile-message {
-      display: none;
+    .loading-screen {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.9);
-      color: white;
-      font-size: 24px;
-      text-align: center;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 2000;
+      color: #E6E6FA;
+      font-family: 'Arial', sans-serif;
+      font-size: 24px;
+      z-index: 3000;
     }
     .holographic-menu {
       display: none;
@@ -54,12 +31,12 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0, 100, 255, 0.2);
-      border: 2px solid #00f;
-      box-shadow: 0 0 20px rgba(0, 100, 255, 0.8), inset 0 0 10px rgba(0, 100, 255, 0.5);
+      background: rgba(128, 0, 32, 0.2);
+      border: 2px solid #E6E6FA;
+      box-shadow: 0 0 20px rgba(128, 0, 32, 0.8), inset 0 0 10px rgba(128, 0, 32, 0.5);
       padding: 20px;
       border-radius: 10px;
-      color: #0ff;
+      color: #E6E6FA;
       font-family: 'Arial', sans-serif;
       text-align: center;
       z-index: 1500;
@@ -67,40 +44,219 @@
     }
     .holographic-menu h2 {
       margin: 0 0 20px;
-      text-shadow: 0 0 10px #0ff;
+      text-shadow: 0 0 10px #E6E6FA;
     }
     .holographic-menu button {
-      background: rgba(0, 100, 255, 0.3);
-      border: 1px solid #0ff;
-      color: #0ff;
+      background: rgba(128, 0, 32, 0.3);
+      border: 1px solid #E6E6FA;
+      color: #E6E6FA;
       padding: 10px 20px;
       margin: 10px;
       border-radius: 5px;
       cursor: pointer;
-      text-shadow: 0 0 5px #0ff;
+      text-shadow: 0 0 5px #E6E6FA;
       transition: all 0.3s;
     }
     .holographic-menu button:hover {
-      background: rgba(0, 100, 255, 0.5);
-      box-shadow: 0 0 10px #0ff;
+      background: rgba(128, 0, 32, 0.5);
+      box-shadow: 0 0 10px #E6E6FA;
     }
     .holographic-menu input[type="range"] {
       -webkit-appearance: none;
       width: 200px;
       height: 5px;
-      background: rgba(0, 100, 255, 0.3);
+      background: rgba(128, 0, 32, 0.3);
       border-radius: 5px;
       outline: none;
-      box-shadow: 0 0 10px #0ff;
+      box-shadow: 0 0 10px #E6E6FA;
     }
     .holographic-menu input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 20px;
       height: 20px;
-      background: #0ff;
+      background: #E6E6FA;
       border-radius: 50%;
-      box-shadow: 0 0 10px #0ff;
+      box-shadow: 0 0 10px #E6E6FA;
       cursor: pointer;
+    }
+    .document-view {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #1a1a1a;
+      border: 2px solid #444;
+      padding: 20px;
+      border-radius: 5px;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      text-align: left;
+      z-index: 1500;
+      width: 95%;
+      max-width: 100%;
+      height: auto;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+    .document-view h2 {
+      margin: 0 0 15px;
+      font-size: 22px;
+      color: #ddd;
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
+    }
+    .document-view button {
+      background: #333;
+      border: 1px solid #555;
+      color: #fff;
+      padding: 8px 15px;
+      margin-top: 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .document-view button:hover {
+      background: #444;
+    }
+    .document-view .folder {
+      position: relative;
+      padding: 20px;
+      background: #4a4a4a;
+      border: 3px solid #666;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      height: auto;
+      min-height: 0;
+      max-height: 80vh;
+      box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), inset 0 2px 5px #666;
+      overflow-y: auto;
+    }
+    .document-view .folder::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 30px;
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 10px solid #666;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .document-view .folder::after {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: 25px;
+      width: 60%;
+      height: 10px;
+      background: #666;
+      border-radius: 3px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .document-view .notepaper {
+      background: #fff;
+      border: 1px dashed #aaa;
+      padding: 15px;
+      margin-top: 15px;
+      line-height: 1.6;
+      font-family: 'Arial', sans-serif;
+      font-size: 16px;
+      color: #333;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+      background-image: linear-gradient(to bottom, transparent 0%, transparent 19%, #ddd 20%, #ddd 21%, transparent 22%, transparent 100%);
+      background-size: 100% 25px;
+    }
+    .document-view .two-page {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 15px;
+    }
+    .document-view .two-page .page {
+      width: 48%;
+      background: #fff;
+      border: 1px dashed #aaa;
+      padding: 15px;
+      font-family: 'Arial', sans-serif;
+      font-size: 14px;
+      color: #333;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      height: auto;
+      max-height: 65vh;
+    }
+    .document-view .team-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      padding: 0;
+      list-style: none;
+    }
+    .document-view .team-list li {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .document-view .team-list img {
+      width: 100px;
+      height: 100px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .document-view .team-list .name {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+    .document-view .team-list .title {
+      margin: 0;
+      font-size: 14px;
+      color: #800020;
+    }
+    .document-view .faq-section {
+      margin-top: 15px;
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .document-view .faq-section h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 18px;
+      border-bottom: 1px solid #aaa;
+      padding-bottom: 5px;
+    }
+    .document-view .faq-section p {
+      margin: 10px 0;
+      line-height: 1.5;
+      color: #444;
+    }
+    .document-view .map {
+      width: 100%;
+      height: 250px;
+      margin-top: 15px;
+      border: 0;
+    }
+    .document-view .schedule-table {
+      width: 100%;
+      margin-top: 15px;
+      border-collapse: collapse;
+    }
+    .document-view .schedule-table th,
+    .document-view .schedule-table td {
+      border: 1px solid #555;
+      padding: 8px;
+      text-align: left;
+    }
+    .document-view .schedule-table th {
+      background: #333;
+      color: #fff;
     }
     .start-screen {
       position: fixed;
@@ -117,42 +273,53 @@
     .start-screen button {
       padding: 20px 40px;
       font-size: 24px;
-      background: rgba(0, 100, 255, 0.3);
-      border: 2px solid #0ff;
-      color: #0ff;
+      background: rgba(128, 0, 32, 0.3);
+      border: 2px solid #E6E6FA;
+      color: #E6E6FA;
       border-radius: 10px;
       cursor: pointer;
-      text-shadow: 0 0 10px #0ff;
-      box-shadow: 0 0 20px rgba(0, 100, 255, 0.8);
+      text-shadow: 0 0 10px #E6E6FA;
+      box-shadow: 0 0 20px rgba(128, 0, 32, 0.8);
       transition: all 0.3s;
+      display: none;
+    }
+    .start-screen button.visible {
+      display: block;
     }
     .start-screen button:hover {
-      background: rgba(0, 100, 255, 0.5);
-      box-shadow: 0 0 30px rgba(0, 100, 255, 1);
+      background: rgba(128, 0, 32, 0.5);
+      box-shadow: 0 0 30px rgba(128, 0, 32, 1);
     }
-    @media (max-width: 768px) and (orientation: portrait) {
-      .mobile-message {
-        display: flex;
+    @media (max-width: 768px) {
+      .document-view .team-list {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
       }
-      canvas, .position-button, .second-position-button, .reset-button, .holographic-menu, .start-screen {
-        display: none;
+      .document-view .team-list img {
+        width: 40px;
+        height: 40px;
       }
-    }
-    @media (max-width: 768px) and (orientation: landscape) {
-      .start-screen {
-        display: flex;
+      .document-view .team-list .name {
+        font-size: 12px;
+      }
+      .document-view .team-list .title {
+        font-size: 10px;
+      }
+      #team-info .two-page {
+        display: block;
+      }
+      #team-info .two-page .page {
+        width: 100%;
+        max-height: none;
       }
     }
   </style>
 </head>
 <body>
-  <div class="mobile-message">Lütfen cihazınızı yatay konuma getirin.</div>
+  <div class="loading-screen" id="loading-screen">Yükleniyor: 0%</div>
   <div class="start-screen" id="start-screen">
     <button id="start-button">Başlat</button>
   </div>
-  <button class="position-button">View 1</button>
-  <button class="second-position-button">View 2</button>
-  <button class="reset-button">Reset View</button>
   <div class="holographic-menu" id="music-menu">
     <h2>Müzik Kontrol</h2>
     <button id="play-pause">Oynat</button>
@@ -160,6 +327,103 @@
       <label for="volume">Ses Seviyesi:</label>
       <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
     </div>
+    <button id="close-music">Kapat</button>
+  </div>
+  <div class="document-view" id="chair-info">
+    <h2>Koltuk Bilgi</h2>
+    <p>Bu, modeldeki koltuk nesnesidir. Detaylar buraya eklenebilir.</p>
+    <button id="close-chair">Kapat</button>
+  </div>
+  <div class="document-view" id="phone-info">
+    <h2>Telefon Bilgi</h2>
+    <p>Bu, modeldeki telefon nesnesidir. Detaylar buraya eklenebilir.</p>
+    <button id="close-phone">Kapat</button>
+  </div>
+  <div class="document-view" id="faq-info">
+    <h2>Sıkça Sorulan Sorular</h2>
+    <div class="folder">
+      <div class="faq-section">
+        <h3>Genel Bilgiler</h3>
+        <p><strong>1. Etkinlik ne zaman başlayacak?</strong> - Etkinlik 03.08.2025 tarihinde saat 10:00'da başlayacaktır.</p>
+        <p><strong>2. Katılım ücreti var mı?</strong> - Hayır, etkinlik tamamen ücretsizdir.</p>
+        <p><strong>3. Etkinlik nerede gerçekleşecek?</strong> - Etkinlik online olarak düzenlenecektir; katılım için bağlantı sağlanacaktır.</p>
+        <h3>Kayıt ve Katılım</h3>
+        <p><strong>4. Kayıt gerekli mi?</strong> - Evet, etkinliğe katılmak için ön kayıt yapılması gerekmektedir. Kayıt linki resmi sitede yer almaktadır.</p>
+        <p><strong>5. Kayıt nasıl yapılır?</strong> - Kayıt için ad, soyad ve e-posta adresinizi formda doldurmanız yeterlidir.</p>
+      </div>
+    </div>
+    <button id="close-faq">Kapat</button>
+  </div>
+  <div class="document-view" id="event-info">
+    <h2>Etkinlik Bilgi</h2>
+    <div class="folder">
+      <div class="two-page">
+        <div class="page">
+          <h3>Our Venue</h3>
+          <p>Yer: Adnan Menderes Anadolu Lisesi</p>
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12681.174156480787!2d27.135714784678316!3d38.42131376085804!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMznCsDI1JzE3LjAiTiAyN8KwMDgnMTQuMiJF!5e0!3m2!1sen!2str!4v1691067200000" width="100%" height="250" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+        </div>
+        <div class="page">
+          <h3>Schedule</h3>
+          <table class="schedule-table">
+            <tr><th>Saat</th><th>Etkinlik</th></tr>
+            <tr><td>10:00</td><td>Açılış</td></tr>
+            <tr><td>12:00</td><td>Sunum</td></tr>
+            <tr><td>14:00</td><td>Kapanış</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <button id="close-event">Kapat</button>
+  </div>
+  <div class="document-view" id="team-info">
+    <h2>Takım Bilgi</h2>
+    <div class="folder">
+      <div class="two-page">
+        <div class="page">
+          <ul class="team-list">
+            <li><img src="https://via.placeholder.com/100" alt="Person 1"><span class="name">Ad Soyad 1</span><span class="title">Ünvan 1</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 2"><span class="name">Ad Soyad 2</span><span class="title">Ünvan 2</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 3"><span class="name">Ad Soyad 3</span><span class="title">Ünvan 3</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 4"><span class="name">Ad Soyad 4</span><span class="title">Ünvan 4</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 5"><span class="name">Ad Soyad 5</span><span class="title">Ünvan 5</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 6"><span class="name">Ad Soyad 6</span><span class="title">Ünvan 6</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 7"><span class="name">Ad Soyad 7</span><span class="title">Ünvan 7</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 8"><span class="name">Ad Soyad 8</span><span class="title">Ünvan 8</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 9"><span class="name">Ad Soyad 9</span><span class="title">Ünvan 9</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 10"><span class="name">Ad Soyad 10</span><span class="title">Ünvan 10</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 11"><span class="name">Ad Soyad 11</span><span class="title">Ünvan 11</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 12"><span class="name">Ad Soyad 12</span><span class="title">Ünvan 12</span></li>
+          </ul>
+        </div>
+        <div class="page">
+          <ul class="team-list">
+            <li><img src="https://via.placeholder.com/100" alt="Person 13"><span class="name">Ad Soyad 13</span><span class="title">Ünvan 13</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 14"><span class="name">Ad Soyad 14</span><span class="title">Ünvan 14</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 15"><span class="name">Ad Soyad 15</span><span class="title">Ünvan 15</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 16"><span class="name">Ad Soyad 16</span><span class="title">Ünvan 16</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 17"><span class="name">Ad Soyad 17</span><span class="title">Ünvan 17</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 18"><span class="name">Ad Soyad 18</span><span class="title">Ünvan 18</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 19"><span class="name">Ad Soyad 19</span><span class="title">Ünvan 19</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 20"><span class="name">Ad Soyad 20</span><span class="title">Ünvan 20</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 21"><span class="name">Ad Soyad 21</span><span class="title">Ünvan 21</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 22"><span class="name">Ad Soyad 22</span><span class="title">Ünvan 22</span></li>
+            <li><img src="https://via.placeholder.com/100" alt="Person 23"><span class="name">Ad Soyad 23</span><span class="title">Ünvan 23</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <button id="close-team">Kapat</button>
+  </div>
+  <div class="document-view" id="folder-text">
+    <h2>Klasör İçeriği</h2>
+    <p>Bu klasörde belgeler ve notlar bulunur. Detaylar: Proje planı, toplantı notları.</p>
+    <button id="close-folder">Kapat</button>
+  </div>
+  <div class="document-view" id="note-text">
+    <h2>Not Sayfası İçeriği</h2>
+    <p>Bu not sayfasında önemli bilgiler yer alır. Örnek: Toplantı tarihi 03.08.2025, görevler: 1) Rapor hazırla, 2) Tasarım kontrol et.</p>
+    <button id="close-note">Kapat</button>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -176,18 +440,18 @@
       renderer.setClearColor(0x000000, 1);
       document.body.appendChild(renderer.domElement);
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+      const ambientLight = new THREE.AmbientLight(0xE6E6FA, 0.4);
       scene.add(ambientLight);
 
-      const mainLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      const mainLight = new THREE.DirectionalLight(0xE6E6FA, 0.6);
       mainLight.position.set(5, 10, 5);
       scene.add(mainLight);
 
-      const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+      const fillLight = new THREE.DirectionalLight(0xE6E6FA, 0.3);
       fillLight.position.set(-5, 5, 5);
       scene.add(fillLight);
 
-      const backLight = new THREE.DirectionalLight(0xffffff, 0.2);
+      const backLight = new THREE.DirectionalLight(0xE6E6FA, 0.2);
       backLight.position.set(0, 5, -5);
       scene.add(backLight);
 
@@ -199,24 +463,42 @@
       let loadedModel = null;
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
+      let activePopup = null;
+      let clickDisabled = false;
 
-      // Background music setup
       const audio = new Audio('muzik.mp3');
       audio.loop = true;
       audio.volume = 0.5;
       let isMusicStarted = false;
 
+      const loadingScreen = document.getElementById('loading-screen');
       const musicMenu = document.getElementById('music-menu');
       const playPauseButton = document.getElementById('play-pause');
       const volumeSlider = document.getElementById('volume');
       const startScreen = document.getElementById('start-screen');
       const startButton = document.getElementById('start-button');
+      const chairInfo = document.getElementById('chair-info');
+      const phoneInfo = document.getElementById('phone-info');
+      const faqInfo = document.getElementById('faq-info');
+      const eventInfo = document.getElementById('event-info');
+      const teamInfo = document.getElementById('team-info');
+      const folderText = document.getElementById('folder-text');
+      const noteText = document.getElementById('note-text');
+      const closeMusic = document.getElementById('close-music');
+      const closeChair = document.getElementById('close-chair');
+      const closePhone = document.getElementById('close-phone');
+      const closeFaq = document.getElementById('close-faq');
+      const closeEvent = document.getElementById('close-event');
+      const closeTeam = document.getElementById('close-team');
+      const closeFolder = document.getElementById('close-folder');
+      const closeNote = document.getElementById('close-note');
 
       startButton.addEventListener('click', () => {
         audio.play().catch(error => console.error('Müzik oynatma hatası:', error));
         playPauseButton.textContent = 'Duraklat';
         isMusicStarted = true;
         startScreen.style.display = 'none';
+        setTimeout(() => { clickDisabled = false; }, 2000); // İlk 2 saniye tıklama kapalı
       });
 
       playPauseButton.addEventListener('click', () => {
@@ -234,8 +516,23 @@
         audio.volume = volumeSlider.value;
       });
 
+      closeMusic.addEventListener('click', () => {
+        musicMenu.style.display = 'none';
+        activePopup = null;
+        clickDisabled = true;
+        setTimeout(() => { clickDisabled = false; }, 500);
+      });
+
+      closeChair.addEventListener('click', () => { chairInfo.style.display = 'none'; activePopup = null; clickDisabled = true; setTimeout(() => { clickDisabled = false; }, 500); });
+      closePhone.addEventListener('click', () => { phoneInfo.style.display = 'none'; activePopup = null; clickDisabled = true; setTimeout(() => { clickDisabled = false; }, 500); });
+      closeFaq.addEventListener('click', () => { faqInfo.style.display = 'none'; activePopup = null; clickDisabled = true; setTimeout(() => { clickDisabled = false; }, 500); });
+      closeEvent.addEventListener('click', () => { eventInfo.style.display = 'none'; activePopup = null; clickDisabled = true; setTimeout(() => { clickDisabled = false; }, 500); });
+      closeTeam.addEventListener('click', () => { teamInfo.style.display = 'none'; activePopup = null; clickDisabled = true; setTimeout(() => { clickDisabled = false; }, 500); });
+      closeFolder.addEventListener('click', () => { folderText.style.display = 'none'; activePopup = null; clickDisabled = true; setTimeout(() => { clickDisabled = false; }, 500); });
+      closeNote.addEventListener('click', () => { noteText.style.display = 'none'; activePopup = null; clickDisabled = true; setTimeout(() => { clickDisabled = false; }, 500); });
+
       loader.load(
-        'compressed_mun.glb',
+        'https://the-nest.com.tr/Source/3d/compressed_mun.glb',
         function (gltf) {
           try {
             loadedModel = gltf.scene;
@@ -249,27 +546,20 @@
               }
             });
 
-            // List all objects in the GLB model
-            console.log('GLB Modelindeki Objeler:');
-            const objectList = [];
-            loadedModel.traverse((object) => {
-              objectList.push({
-                name: object.name || 'İsimsiz',
-                type: object.type,
-                uuid: object.uuid
-              });
-            });
-            console.table(objectList);
-
             loadedModel.position.set(0, 0, 0);
             loadedModel.rotation.set(0, Math.PI, 0);
             scene.add(loadedModel);
+
+            loadingScreen.style.display = 'none';
+            startButton.classList.add('visible');
+            clickDisabled = true; // Başlangıçta tıklama kapalı
           } catch (error) {
             console.error('Model işlenirken hata:', error);
           }
         },
         function (xhr) {
-          console.log((xhr.loaded / xhr.total * 100) + '% yüklendi');
+          const percent = Math.round((xhr.loaded / xhr.total) * 100);
+          loadingScreen.textContent = `Yükleniyor: ${percent}%`;
         },
         function (error) {
           console.error('GLB modeli yüklenemedi:', error);
@@ -284,12 +574,71 @@
       controls.panSpeed = 0.5;
       controls.zoomSpeed = 0.5;
 
-      camera.position.set(-0.01, 0.97, 0.20);
-      controls.target.set(-0.01, 0.83, -0.27);
+      const isMobile = window.innerWidth < 768;
+      camera.position.set(isMobile ? -0.01 : 0.99, isMobile ? 0.87 : 0.90, isMobile ? 1.66 : 1.24);
+      controls.target.set(0.06, 0.73, -0.10);
       controls.update();
 
-      // Click event handler for objects
+      const cameraPositions = {
+        mobile: [
+          { position: { x: -0.01, y: 0.87, z: 1.66 }, target: { x: 0.06, y: 0.73, z: -0.10 }, label: 'TELEFON AÇILIŞ' },
+          { position: { x: 0.13, y: 1.23, z: 0.70 }, target: { x: 0.11, y: 0.91, z: -0.08 }, label: 'TELEFON ORTA' },
+          { position: { x: 1.49, y: 0.92, z: -0.12 }, target: { x: 0.06, y: 0.75, z: -0.02 }, label: 'KOMİTELER' }
+        ],
+        desktop: [
+          { position: { x: 0.99, y: 0.90, z: 1.24 }, target: { x: 0.06, y: 0.73, z: -0.10 }, label: 'PC BAŞLANGIÇ' },
+          { position: { x: 0.05, y: 0.92, z: 0.18 }, target: { x: 0.04, y: 0.91, z: -0.21 }, label: 'PC YAKINDAN BAKMA' },
+          { position: { x: 0.11, y: 0.92, z: -0.21 }, target: { x: 0.04, y: 0.91, z: -0.21 }, label: 'PC KOMİTELER' }
+        ]
+      };
+      let currentCameraIndex = 0;
+      let isScrolling = false;
+
+      function updateCameraPosition(index, positions) {
+        const { position, target } = positions[index];
+        gsap.to(camera.position, {
+          x: position.x,
+          y: position.y,
+          z: position.z,
+          duration: 1,
+          ease: 'power2.out',
+          onUpdate: () => controls.update()
+        });
+        gsap.to(controls.target, {
+          x: target.x,
+          y: target.y,
+          z: target.z,
+          duration: 1,
+          ease: 'power2.out',
+          onUpdate: () => controls.update(),
+          onComplete: () => { isScrolling = false; }
+        });
+      }
+
+      if (!isMobile) {
+        window.addEventListener('wheel', (event) => {
+          if (isScrolling || activePopup) return;
+          isScrolling = true;
+          const delta = event.deltaY > 0 ? 1 : -1;
+          const positions = cameraPositions.desktop;
+          currentCameraIndex = (currentCameraIndex + delta + positions.length) % positions.length;
+          if (currentCameraIndex < 0) currentCameraIndex = positions.length - 1;
+          updateCameraPosition(currentCameraIndex, positions);
+        });
+      } else {
+        window.addEventListener('wheel', (event) => {
+          if (isScrolling || activePopup) return;
+          isScrolling = true;
+          const delta = event.deltaY > 0 ? 1 : -1;
+          const positions = cameraPositions.mobile;
+          currentCameraIndex = (currentCameraIndex + delta + positions.length) % positions.length;
+          if (currentCameraIndex < 0) currentCameraIndex = positions.length - 1;
+          updateCameraPosition(currentCameraIndex, positions);
+        });
+      }
+
       function onMouseClick(event) {
+        if (!loadedModel || clickDisabled) return;
         event.preventDefault();
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -299,106 +648,77 @@
 
         if (intersects.length > 0) {
           const object = intersects[0].object;
-          console.log('Tıklanan Obje:', {
-            name: object.name || 'İsimsiz',
-            type: object.type,
-            uuid: object.uuid
-          });
-
-          // Check object and its parents for the target name
           let currentObject = object;
           while (currentObject) {
-            if (currentObject.name.toLowerCase() === 'victor_victrola_vv120__phonograph_housing') {
-              console.log('Phonograph tespit edildi, menü toggling...');
-              console.log('Mevcut menü display:', musicMenu.style.display);
+            const name = currentObject.name.toLowerCase();
+            if (name === 'mesh_0_16' || name === 'mesh_0_15' || name === 'mesh_0_7') {
+              if (activePopup) activePopup.style.display = 'none';
+              chairInfo.style.display = chairInfo.style.display === 'block' ? 'none' : 'block';
+              activePopup = chairInfo.style.display === 'block' ? chairInfo : null;
+              clickDisabled = true;
+              setTimeout(() => { clickDisabled = false; }, 500);
+              return;
+            } else if (name === 'mesh_10_1' || name === 'mesh_21_1' || name === 'mesh_12') {
+              if (activePopup) activePopup.style.display = 'none';
               musicMenu.style.display = musicMenu.style.display === 'block' ? 'none' : 'block';
-              console.log('Yeni menü display:', musicMenu.style.display);
+              activePopup = musicMenu.style.display === 'block' ? musicMenu : null;
+              clickDisabled = true;
+              setTimeout(() => { clickDisabled = false; }, 500);
+              return;
+            } else if (name === 'mesh_35_1') {
+              if (activePopup) activePopup.style.display = 'none';
+              phoneInfo.style.display = phoneInfo.style.display === 'block' ? 'none' : 'block';
+              activePopup = phoneInfo.style.display === 'block' ? phoneInfo : null;
+              clickDisabled = true;
+              setTimeout(() => { clickDisabled = false; }, 500);
+              return;
+            } else if (name === 'mesh_43' || name === 'mesh_40_instance_2' || name === 'mesh_37_instance_2' || name === 'mesh_41_instance_2') {
+              if (activePopup) activePopup.style.display = 'none';
+              faqInfo.style.display = faqInfo.style.display === 'block' ? 'none' : 'block';
+              activePopup = faqInfo.style.display === 'block' ? faqInfo : null;
+              clickDisabled = true;
+              setTimeout(() => { clickDisabled = false; }, 500);
+              return;
+            } else if (name === 'mesh_42' || name === 'mesh_40_instance_1' || name === 'mesh_37_instance_1' || name === 'mesh_41_instance_1') {
+              if (activePopup) activePopup.style.display = 'none';
+              eventInfo.style.display = eventInfo.style.display === 'block' ? 'none' : 'block';
+              activePopup = eventInfo.style.display === 'block' ? eventInfo : null;
+              clickDisabled = true;
+              setTimeout(() => { clickDisabled = false; }, 500);
+              return;
+            } else if (name === 'mesh_39' || name === 'mesh_40_instance_0' || name === 'mesh_37_instance_0' || name === 'mesh_41_instance_0') {
+              if (activePopup) activePopup.style.display = 'none';
+              teamInfo.style.display = teamInfo.style.display === 'block' ? 'none' : 'block';
+              activePopup = teamInfo.style.display === 'block' ? teamInfo : null;
+              clickDisabled = true;
+              setTimeout(() => { clickDisabled = false; }, 500);
+              return;
+            } else if (name.includes('folder_1shape') || name.includes('folderabccleanermaterialmergergles')) {
+              if (activePopup) activePopup.style.display = 'none';
+              folderText.style.display = folderText.style.display === 'block' ? 'none' : 'block';
+              activePopup = folderText.style.display === 'block' ? folderText : null;
+              clickDisabled = true;
+              setTimeout(() => { clickDisabled = false; }, 500);
+              return;
+            } else if (name.includes('a4_page') || name.includes('a4_paper_stack')) {
+              if (activePopup) activePopup.style.display = 'none';
+              noteText.style.display = noteText.style.display === 'block' ? 'none' : 'block';
+              activePopup = noteText.style.display === 'block' ? noteText : null;
+              clickDisabled = true;
+              setTimeout(() => { clickDisabled = false; }, 500);
               return;
             }
             currentObject = currentObject.parent;
           }
-          console.log('Phonograph bulunamadı.');
         }
       }
 
       window.addEventListener('click', onMouseClick, false);
 
-      // Mobile orientation handler for full-screen
-      window.addEventListener('orientationchange', () => {
-        if (window.innerWidth < 768 && (window.orientation === 90 || window.orientation === -90)) {
-          if (document.documentElement.requestFullscreen) {
-            renderer.domElement.requestFullscreen().catch(err => console.error('Tam ekran hatası:', err));
-          }
-        }
-      });
-
       window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-
-      // First button (View 1)
-      const button = document.querySelector('.position-button');
-      button.addEventListener('click', () => {
-        gsap.to(camera.position, {
-          x: -0.48,
-          y: 0.96,
-          z: -0.23,
-          duration: 1,
-          ease: 'power2.out',
-          onUpdate: () => controls.update()
-        });
-        gsap.to(controls.target, {
-          x: -0.01,
-          y: 0.83,
-          z: -0.27,
-          duration: 1,
-          ease: 'power2.out',
-          onUpdate: () => controls.update()
-        });
-      });
-
-      // Second button (View 2)
-      const secondButton = document.querySelector('.second-position-button');
-      secondButton.addEventListener('click', () => {
-        gsap.to(camera.position, {
-          x: 0.47,
-          y: 0.90,
-          z: -0.27,
-          duration: 1,
-          ease: 'power2.out',
-          onUpdate: () => controls.update()
-        });
-        gsap.to(controls.target, {
-          x: -0.01,
-          y: 0.83,
-          z: -0.27,
-          duration: 1,
-          ease: 'power2.out',
-          onUpdate: () => controls.update()
-        });
-      });
-
-      // Reset button (Initial view)
-      const resetButton = document.querySelector('.reset-button');
-      resetButton.addEventListener('click', () => {
-        gsap.to(camera.position, {
-          x: -0.01,
-          y: 0.97,
-          z: 0.20,
-          duration: 1,
-          ease: 'power2.out',
-          onUpdate: () => controls.update()
-        });
-        gsap.to(controls.target, {
-          x: -0.01,
-          y: 0.83,
-          z: -0.27,
-          duration: 1,
-          ease: 'power2.out',
-          onUpdate: () => controls.update()
-        });
       });
 
       function animate() {
@@ -408,15 +728,6 @@
       }
 
       animate();
-
-      setInterval(() => {
-        console.log(
-          `Kamera Pozisyonu: x=${camera.position.x.toFixed(2)}, y=${camera.position.y.toFixed(2)}, z=${camera.position.z.toFixed(2)}`
-        );
-        console.log(
-          `Kontrol Hedefi (controls.target): x=${controls.target.x.toFixed(2)}, y=${controls.target.y.toFixed(2)}, z=${controls.target.z.toFixed(2)}`
-        );
-      }, 2000);
     })();
   </script>
 </body>
