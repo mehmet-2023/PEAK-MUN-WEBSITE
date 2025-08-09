@@ -191,7 +191,7 @@
     .document-view .team-list {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
+      gap: 10px;
       padding: 0;
       list-style: none;
     }
@@ -202,19 +202,19 @@
       text-align: center;
     }
     .document-view .team-list img {
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
       border-radius: 5px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     }
     .document-view .team-list .name {
-      margin: 5px 0;
-      font-size: 16px;
+      margin: 4px 0;
+      font-size: 14px;
     }
     .document-view .team-list .title {
       margin: 0;
-      font-size: 14px;
+      font-size: 12px;
       color: #800020;
     }
     .document-view .faq-section {
@@ -290,20 +290,33 @@
       background: rgba(128, 0, 32, 0.5);
       box-shadow: 0 0 30px rgba(128, 0, 32, 1);
     }
+    .hint-text {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #FF0000; /* Neon red */
+      font-family: 'Arial', sans-serif;
+      font-size: 18px;
+      text-shadow: 0 0 10px #FF0000;
+      opacity: 0;
+      z-index: 1000;
+      transition: opacity 1s ease-in-out;
+    }
     @media (max-width: 768px) {
       .document-view .team-list {
         grid-template-columns: repeat(6, 1fr);
-        gap: 10px;
+        gap: 8px;
       }
       .document-view .team-list img {
-        width: 40px;
-        height: 40px;
+        width: 30px;
+        height: 30px;
       }
       .document-view .team-list .name {
-        font-size: 12px;
+        font-size: 10px;
       }
       .document-view .team-list .title {
-        font-size: 10px;
+        font-size: 8px;
       }
       #team-info .two-page {
         display: block;
@@ -311,6 +324,9 @@
       #team-info .two-page .page {
         width: 100%;
         max-height: none;
+      }
+      .hint-text {
+        font-size: 14px;
       }
     }
   </style>
@@ -425,6 +441,9 @@
     <p>Bu not sayfasında önemli bilgiler yer alır. Örnek: Toplantı tarihi 03.08.2025, görevler: 1) Rapor hazırla, 2) Tasarım kontrol et.</p>
     <button id="close-note">Kapat</button>
   </div>
+  <div class="hint-text" id="hint1">Scroll down for more fun</div>
+  <div class="hint-text" id="hint2">Click on folders for more detail</div>
+  <div class="hint-text" id="hint3">Dive in to real mun experience</div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
@@ -491,6 +510,9 @@
       const closeTeam = document.getElementById('close-team');
       const closeFolder = document.getElementById('close-folder');
       const closeNote = document.getElementById('close-note');
+      const hint1 = document.getElementById('hint1');
+      const hint2 = document.getElementById('hint2');
+      const hint3 = document.getElementById('hint3');
 
       startButton.addEventListener('click', () => {
         audio.play().catch(error => console.error('Müzik oynatma hatası:', error));
@@ -552,6 +574,7 @@
             loadingScreen.style.display = 'none';
             startButton.classList.add('visible');
             clickDisabled = true; // Başlangıçta tıklama kapalı
+            animateHints(); // Start hint animation after model loads
           } catch (error) {
             console.error('Model işlenirken hata:', error);
           }
@@ -618,6 +641,16 @@
           if (isScrolling || activePopup) return;
           isScrolling = true;
           const delta = event.deltaY > 0 ? 1 : -1;
+          const positions = cameraPositions.mobile;
+          currentCameraIndex = (currentCameraIndex + delta + positions.length) % positions.length;
+          if (currentCameraIndex < 0) currentCameraIndex = positions.length - 1;
+          updateCameraPosition(currentCameraIndex, positions);
+        });
+        window.addEventListener('touchmove', (event) => {
+          if (isScrolling || activePopup) return;
+          isScrolling = true;
+          const touch = event.touches[0];
+          const delta = touch.clientY > window.innerHeight / 2 ? -1 : 1; // Simplified touch direction
           const positions = cameraPositions.mobile;
           currentCameraIndex = (currentCameraIndex + delta + positions.length) % positions.length;
           if (currentCameraIndex < 0) currentCameraIndex = positions.length - 1;
@@ -708,6 +741,18 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
+
+      function animateHints() {
+        gsap.to(hint1, { opacity: 1, duration: 1, delay: 0, onComplete: () => {
+          gsap.to(hint1, { opacity: 0, duration: 1, delay: 2 });
+        }});
+        gsap.to(hint2, { opacity: 1, duration: 1, delay: 4, onComplete: () => {
+          gsap.to(hint2, { opacity: 0, duration: 1, delay: 2 });
+        }});
+        gsap.to(hint3, { opacity: 1, duration: 1, delay: 8, onComplete: () => {
+          gsap.to(hint3, { opacity: 0, duration: 1, delay: 2, onComplete: animateHints });
+        }});
+      }
 
       function animate() {
         requestAnimationFrame(animate);
