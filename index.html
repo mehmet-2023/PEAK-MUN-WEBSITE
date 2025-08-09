@@ -427,7 +427,6 @@
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script>
@@ -566,18 +565,9 @@
         }
       );
 
-      const controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.autoRotate = false;
-      controls.rotateSpeed = 0.5;
-      controls.panSpeed = 0.5;
-      controls.zoomSpeed = 0.5;
-
       const isMobile = window.innerWidth < 768;
       camera.position.set(isMobile ? -0.01 : 0.99, isMobile ? 0.87 : 0.90, isMobile ? 1.66 : 1.24);
-      controls.target.set(0.06, 0.73, -0.10);
-      controls.update();
+      camera.lookAt(0.06, 0.73, -0.10);
 
       const cameraPositions = {
         mobile: [
@@ -602,15 +592,13 @@
           z: position.z,
           duration: 1,
           ease: 'power2.out',
-          onUpdate: () => controls.update()
+          onUpdate: () => {
+            camera.lookAt(target.x, target.y, target.z);
+          }
         });
-        gsap.to(controls.target, {
-          x: target.x,
-          y: target.y,
-          z: target.z,
+        gsap.to(camera, {
           duration: 1,
           ease: 'power2.out',
-          onUpdate: () => controls.update(),
           onComplete: () => { isScrolling = false; }
         });
       }
@@ -723,7 +711,6 @@
 
       function animate() {
         requestAnimationFrame(animate);
-        controls.update();
         renderer.render(scene, camera);
       }
 
