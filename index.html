@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GLB Model Viewer</title>
+  <title>MUNDERES 26</title>
   <style>
     *{
       overflow-x: none;
@@ -532,7 +532,7 @@
       closeNote.addEventListener('click', () => { noteText.style.display = 'none'; activePopup = null; clickDisabled = true; setTimeout(() => { clickDisabled = false; }, 500); });
 
       loader.load(
-        'https://the-nest.com.tr/Source/3d/compressed_mun.glb',
+        'compressed_mun.glb',
         function (gltf) {
           try {
             loadedModel = gltf.scene;
